@@ -20,7 +20,7 @@ end
 n,m = size(Z)
 λ = 1/m
 function logistic_loss(x)
-    return λ/2 * FrankWolfe.fast_dot(x,x) + sum(logsumexp.(0.0,-y .* (Z'*x)))/m
+    return λ/2 * dot(x,x) + sum(logsumexp.(0.0,-y .* (Z'*x)))/m
 end
 
 y_z_prod = Z * Diagonal(y)
@@ -36,7 +36,7 @@ function build_quadratic_approximation!(Hx,x,gradient,fx, H_quadratic_active_set
     H_quadratic_active_set .= λ*I(n) + ZsZm
     b_quadratic_active_set .= gradient - ZsZm * x - λ*x 
     function f_quad_approx(p)
-        return FrankWolfe.fast_dot(gradient, p-x) + 1/(2*m) * fast_dot((Z' * p - Zx).^2, scales) + λ/2 * fast_dot(p-x,p-x)
+        return dot(gradient, p-x) + 1/(2*m) * dot((Z' * p - Zx).^2, scales) + λ/2 * dot(p-x,p-x)
     end 
     function grad_quad_approx!(storage,p)
         storage .= gradient + 1/m * Z * (Z' * p .* scales - Zxs) + λ * (p-x)
@@ -50,17 +50,17 @@ end
 #############################################################################################################
 
 ##General SOCGS parameters
-socgs_max_iteration = 100 #[5, 100, 1000]
-socgs_timeout = 2000.0
+socgs_max_iteration = 50 #[5, 100, 1000]
+socgs_timeout = 3000.0
 do_lazy = true
 lazy_tolerance = 1.0
 fw_step = FrankWolfe.BlendedPairwiseStep(do_lazy,lazy_tolerance)
-lmo = FrankWolfe.LpNormLMO{1}(1.0)
+lmo = FrankWolfe.LpNormBallLMO{1}(1.0)
 x0 = zeros(n)
 x0[1] = 1.0
 
 ##Quadratic corrections parameters
-do_pvm_with_quadratic_active_set = true #true to do a QC false for corrective step without QC (do_wolfe is then ignored)
+do_pvm_with_quadratic_active_set = true#true to do a QC false for corrective step without QC (do_wolfe is then ignored)
 do_wolfe = true #true for QC-MNP false QC-LP
 scaling_factor = 30
 
