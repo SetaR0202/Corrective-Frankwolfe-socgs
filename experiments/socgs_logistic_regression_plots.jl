@@ -2,6 +2,8 @@ using FileIO,JLD2
 using Plots
 using FrankWolfe
 
+
+include("../src/socgs_algorithm.jl")
 include(joinpath(pathof(FrankWolfe), "../../examples/plot_utils.jl"))
 
 socgs_plots_dir_name = "socgs_plots"
@@ -12,8 +14,8 @@ end
 #############################################################################################################
 ####Run parameters
 #############################################################################################################
-socgs_max_iteration = 5 #[5, 100, 1000]
-socgs_timeout = 2000.0
+socgs_max_iteration = 50 #[5, 100, 1000]
+socgs_timeout = 3000.0
 pvm_stop_name = "100IT" #["100IT", "200IT", "500IT","1000IT"] #number of inner step for each pvm step
 line_search_after_pvm_name = "lsOFF" #["lsOFF","lsSECA","lsAGNO", "lsGAGN"]
 
@@ -33,7 +35,7 @@ full_names =
 save_filename= "socgs_plots/"*prefix*"_"*suffix*".pdf"
 
 data =[]
-label =[]
+label = Vector{String}()
 
 for exp in full_names
     loaded_data = FileIO.load("socgs_records/"*exp.name*".jld2","data")
@@ -41,6 +43,7 @@ for exp in full_names
     push!(data,traj)
     push!(label,exp.shortname)
 end
+
 
 
 plot_trajectories(
